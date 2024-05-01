@@ -1,10 +1,21 @@
 ''' Database models. '''
-from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
+from django.db import models
+
+import os
+import uuid
+
+def recipe_image_file_path(instance, filename):
+    ''' generates file_path for the new recipe image.'''
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+    return os.path.join('uploads','recipe',filename)
+
 
 class UserManager(BaseUserManager):
     ''' manager for users '''
@@ -27,6 +38,7 @@ class UserManager(BaseUserManager):
 
         return user
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     ''' User in the system '''
     email = models.EmailField(max_length=255, unique=True)
@@ -37,4 +49,45 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class Recipe(models.Model):
+    ''' Recipe in the system '''
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    link = models.CharField(max_length=255, blank=True)
+    tags = models.ManyToManyField('Tag')
+    ingredients = models.ManyToManyField('Ingredient')
+    image = models.ImageField(null=True, upload_to=recipe_image_file_path)
+
+    def __str__(self):
+        return self.title
+
+
+class Tag(models.Model):
+    ''' Tag for filtering recipes '''
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+
+class Ingredient(models.Model):
+    """ Ingridient to be used in recipe """
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,  on_delete=models.CASCADE)
+    recipes = models.ManyToManyField(Recipe)
+
+    def __str__(self):
+        return str(self.name)
+
+
+
+
 
