@@ -24,8 +24,8 @@ services:
       - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_NAME=${DB_USER}
-      - POSTGRES_PASS=${DB_PASS}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
 #       - POSTGRES_DB=devdb
 #       - POSTGRES_USER=devuser
 #       - POSTGRES_PASSWORD=changeme
